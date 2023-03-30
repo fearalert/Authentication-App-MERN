@@ -2,12 +2,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap');
 
 :root {
-  --primary-color: rgb(41, 47, 134);
+  --primary-color: rgb(41, 134, 97);
+  --tertiary-color: rgb(46, 41, 134);
   --secondary-color: rgb(219, 77, 77);
   --input-background-color: rgb(234, 234, 235);
   --overall-background-color: rgb(247, 247, 247);
   --form-bakckground-color: rgb(255,255,255);
   --dark-color: rgb(19, 18, 18);
+
+  --border-radius-fields: 2rem;
 }
 
 body {
