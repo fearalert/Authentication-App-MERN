@@ -1,8 +1,21 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geologica:wght@100..900&display=swap');
+
+:root {
+  --primary-color: rgb(41, 47, 134);
+  --secondary-color: rgb(219, 77, 77);
+  --input-background-color: rgb(234, 234, 235);
+  --overall-background-color: rgb(247, 247, 247);
+  --form-bakckground-color: rgb(255,255,255);
+  --dark-color: rgb(19, 18, 18);
+}
+
 body {
   margin: 0;
   padding: 0;
-  background-color: black;
-  color: white;
+  background-color: var(--overall-bakckground-color);
+  color: var(--dark-color);
+  font-family: 'Poppins', sans-serif;
 }
 
 * {
