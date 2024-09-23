@@ -61,7 +61,7 @@ function Signup() {
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       <div className={styles.formContainer}>
-        <h2>Sign up</h2>
+      <h1>Sign Up</h1>
         <div className={styles.inputContainer}>
           <input
             type="text"

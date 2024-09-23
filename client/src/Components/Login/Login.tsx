@@ -53,7 +53,7 @@ function Login() {
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       <div className={styles.formContainer}>
-        <h2>Login</h2>
+        <h1>Login</h1>
         <div className={styles.inputContainer}>
           <input
             type="email"
