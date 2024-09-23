@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link } from "react-router-dom";
 import styles from "./Signup.module.css";
 import { ChangeEvent, useState, FormEvent } from "react";
 import { emailRegex, passwordRegex } from "../../Utils/Regex";
 import toast from "react-hot-toast";
+import axios from "axios";
+// import { hostname } from "../../Constants/Hostname";
 
 function Signup() {
   const [userDetails, setuserDetails] = useState({
@@ -13,7 +16,7 @@ function Signup() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!userDetails.username) {
@@ -40,10 +43,22 @@ function Signup() {
       return;
     }
 
-    toast.success("Form Submitted Successfully.", {
-      duration: 8000,
-      position: 'top-left'
-    });
+    try {
+      const response = await axios.post("http://localhost:4000/v1/users/register", userDetails);
+      console.log(response);
+      toast.success("Registration successful!", {
+        duration: 4000,
+        position: 'top-left'
+      });
+    } catch (error: any) {
+      console.log("Error", error);
+      toast.error(`Error: ${error.response?.data?.message || "Something went wrong."}`, {
+        duration: 4000,
+        position: 'top-left'
+      });
+    }
+    
+
   };
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {

@@ -9,11 +9,13 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    match: [/.+@.+\..+/, 'Please provide a valid email address'],
   },
   password: {
     type: String,
     required: true,
     select: false,
+    minlength: [8, 'Password must be at least 8 characters long'],
   },
   isVerified: {
     type: Boolean,

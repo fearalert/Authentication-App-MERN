@@ -7,11 +7,13 @@ const userRoutes = require('./Routes/UserRoutes');
 
 const app = express();
 
-app.use(cors());
+app.use(express.json());
+
+app.use(cors("http://localhost:5173"));
 
 app.use(morgan("dev"));
 
-app.use("/v1/user", userRoutes);
+app.use("/v1/users", userRoutes);
 
 
 app.get("/", (req, res) => {
