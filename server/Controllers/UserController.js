@@ -1,13 +1,12 @@
 const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
-const User = require('../Models/UserSchema');
-const sendEmail = require('../Utils/SendEmail');
+const UserModel = require('../Models/UserSchema');
+const otp_generator = require('otp-generator');
 
-exports.register = async (req, res) => {
+const register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
 
-    const existingUser = await User.findOne({ email });
+    const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already exists' });
     }
@@ -18,10 +17,13 @@ exports.register = async (req, res) => {
     const OTP = Math.floor(100000 + Math.random() * 900000).toString();
     const OTP_expires = Date.now() + 10 * 60 * 1000;
 
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verification_expires = Date.now() + 24 * 60 * 60 * 1000;
+    // const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationToken = otp_generator.generate(6, {specialChars: true, upperCaseAlphabets: false})
+    const verification_expires = Date;
 
-    const newUser = new User({
+    verification_expires.setMinutes(expires.getMinutes() + 5);
+
+    const newUser = new UserModel({
       username,
       email,
       password: hashedPassword,
@@ -31,7 +33,7 @@ exports.register = async (req, res) => {
 
     await newUser.save();
 
-    const message = `Your OTP is ${OTP}. It will expire in 10 minutes. \nOr use this verification link: http://yourdomain.com/verify/${verificationToken}`;
+    const message = `Your OTP is ${OTP}. It will expire in 10 minutes. \nOr use this verification link: http://localhost.com/verify/${verificationToken}`;
     await sendEmail(email, 'Account Verification', message);
 
     return res.status(201).json({
@@ -42,3 +44,5 @@ exports.register = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error });
   }
 };
+
+module.exports = {register}
