@@ -1,9 +1,12 @@
-import { Link } from "react-router-dom";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 import { ChangeEvent, useState, FormEvent } from "react";
 import { emailRegex } from "../../Utils/Regex";
 import toast from "react-hot-toast";
 import { FaFacebookF, FaGoogle } from "react-icons/fa";
+import axios from "axios";
+
 
 function Login() {
   const [loginDetails, setLoginDetails] = useState({
@@ -11,9 +14,12 @@ function Login() {
     password: ""
   });
 
+  const navigate = useNavigate();
+
+
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async(event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!emailRegex.test(loginDetails.email)) {
@@ -32,11 +38,32 @@ function Login() {
       return;
     }
 
-    toast.success("Logged in successfully!", {
-      duration: 8000,
-      position: 'top-left'
-    });
+    try {
+      const response = await axios.post("http://localhost:4000/v1/users/login", loginDetails);
+  
+      console.log("Login Response", response);
+  
+      if (response.data && response.data.token) {
+        toast.success("Login successful!", {
+          duration: 4000,
+          position: 'top-left'
+        });
+        localStorage.setItem('token', response.data.token);
+        navigate('/home');
+        setLoginDetails({
+          email: "",
+          password: "",
+        })
+      }
+    } catch (error: any) {
+      console.log("Error", error);
+      toast.error(`Error: ${error.response?.data?.message || "Something went wrong."}`, {
+        duration: 4000,
+        position: 'top-left'
+      });
+    }
   };
+
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
     const { name, value } = event.target;

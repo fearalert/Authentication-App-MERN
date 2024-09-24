@@ -104,12 +104,12 @@ const login = async (req, res) => {
 
     const user = await UserModel.findOne({ email }).select('+password');
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid email address' });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: 'Invalid password' });
     }
 
     if (!user.isVerified) {

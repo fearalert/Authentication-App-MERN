@@ -1,12 +1,8 @@
-import { useState } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 
 const Auth = () => {
+  const token = localStorage.getItem('token');
+  return token ? <Outlet /> : <Navigate to="/" />;
+};
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [IsLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-
-  return IsLoggedIn ? <Outlet /> : <Navigate to="/" />
-}
-
-export default Auth
+export default Auth;
