@@ -5,6 +5,7 @@ import { ChangeEvent, useState, FormEvent } from "react";
 import { emailRegex, passwordRegex } from "../../Utils/Regex";
 import toast from "react-hot-toast";
 import axios from "axios";
+import LoadingSpinner from "../LoadingScreen/LoadingScreen";
 
 function Signup() {
   const [userDetails, setuserDetails] = useState({
@@ -15,6 +16,7 @@ function Signup() {
 
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -44,6 +46,7 @@ function Signup() {
     }
 
     try {
+      setLoading(true);
       const response = await axios.post("http://localhost:4000/v1/users/register", userDetails);
       console.log(response);
       toast.success("Registration successful!", {
@@ -58,6 +61,8 @@ function Signup() {
         duration: 4000,
         position: 'top-left'
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -75,6 +80,9 @@ function Signup() {
 
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
+      {loading ? (
+         <LoadingSpinner />
+      ) : (
       <div className={styles.formContainer}>
         <h1>Sign Up</h1>
         <div className={styles.inputContainer}>
@@ -116,7 +124,7 @@ function Signup() {
           <span>Already have an account? </span>
           <Link className={styles.redirect} to={"/"}>Login here</Link>
         </div>
-      </div>
+      </div>)}
     </form>
   );
 }

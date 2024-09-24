@@ -3,11 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import styles from './Otp.module.css';
+import LoadingSpinner from '../LoadingScreen/LoadingScreen';
 
 function OtpScreen() {
   const [OTP, setOTP] = useState<string>('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [loading, setLoading] = useState(false);
+
   
   const email = location.state?.email;
 
@@ -25,6 +28,7 @@ function OtpScreen() {
     }
 
     try {
+    setLoading(true);
       const response = await axios.post('http://localhost:4000/v1/users/verify-otp', { email, OTP });
       toast.success(response.data.message, {
         duration: 4000,
@@ -42,6 +46,9 @@ function OtpScreen() {
 
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
+        {loading ? (
+           <LoadingSpinner />
+      ) : (
       <div className={styles.formContainer}>
         <h1>OTP Verification</h1>
         <p>Enter your 6-digits OTP received via your email.</p>
@@ -57,7 +64,7 @@ function OtpScreen() {
           />
           <button type="submit">Verify OTP</button>
         </div>
-      </div>
+      </div>)}
     </form>
   );
 }
