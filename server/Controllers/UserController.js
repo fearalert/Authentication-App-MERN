@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const UserModel = require('../Models/UserSchema');
 const otp_generator = require('otp-generator');
 const SendEmail = require('../Utils/SendEmail');
+const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
   try {
@@ -22,6 +23,9 @@ const register = async (req, res) => {
     const verificationToken = otp_generator.generate(6, { specialChars: true, upperCaseAlphabets: false });
     const verification_expires = new Date();
     verification_expires.setMinutes(verification_expires.getMinutes() + 5);
+
+    console.log("Token", verificationToken);
+    console.log("OTP", OTP);
 
     const newUser = new UserModel({
       username,
@@ -46,4 +50,96 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = { register };
+
+const verify = async (req, res) => {
+  try {
+    const { email, OTP } = req.body;
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'User not found' });
+    }
+
+    if (user.OTP_VerificationToken.OTP === OTP && user.OTP_VerificationToken.expires > Date.now()) {
+      user.isVerified = true;
+      user.OTP_VerificationToken = {};
+      await user.save();
+
+      return res.json({ message: 'User verified successfully' });
+    } else {
+      return res.status(400).json({ message: 'Invalid or expired OTP' });
+    }
+  } catch (error) {
+    console.error("Error in verify OTP API:", error);
+    return res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+const verifyEmail = async (req, res) => {
+  const { token, email } = req.query;
+
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ message: 'User not found' });
+  }
+
+  if (
+    user.verificationToken.verification === token &&
+    user.verificationToken.expires > Date.now()
+  ) {
+    user.isVerified = true;
+    user.verificationToken = {};
+    await user.save();
+
+    return res.json({ message: 'Email verified successfully!' });
+  } else {
+    return res.status(400).json({ message: 'Invalid or expired verification token' });
+  }
+};
+
+
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await UserModel.findOne({ email }).select('+password');
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid email or password' });
+    }
+
+    if (!user.isVerified) {
+      return res.status(403).json({ message: 'User is not verified' });
+    }
+
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    res.json({ token, message: 'Login successful' });
+  } catch (error) {
+    console.error("Error in login API:", error);
+    return res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+const verifyJWTToken = (req, res, next) => {
+  const token = req.headers['authorization']?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(403).json({ message: 'No token provided' });
+  }
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ message: 'Unauthorized!' });
+    }
+    req.userId = decoded.id;
+    next();
+  });
+};
+
+module.exports = { register, verify, login, verifyJWTToken, verifyEmail };
+
