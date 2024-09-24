@@ -11,13 +11,10 @@ function OtpScreen() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
 
-  
   const email = location.state?.email;
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    console.log(email)
 
     if (OTP.length !== 6) {
       toast.error("Please enter a valid 6-digit OTP.", {
@@ -28,7 +25,7 @@ function OtpScreen() {
     }
 
     try {
-    setLoading(true);
+      setLoading(true);
       const response = await axios.post('http://localhost:4000/v1/users/verify-otp', { email, OTP });
       toast.success(response.data.message, {
         duration: 4000,
@@ -41,30 +38,33 @@ function OtpScreen() {
         duration: 4000,
         position: 'top-left',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
-        {loading ? (
-           <LoadingSpinner />
+      {loading ? (
+        <LoadingSpinner />
       ) : (
-      <div className={styles.formContainer}>
-        <h1>OTP Verification</h1>
-        <p>Enter your 6-digits OTP received via your email.</p>
-        <div className={styles.inputContainer}>
-          <input
-            type="text"
-            name="otp"
-            value={OTP}
-            onChange={(e) => setOTP(e.target.value)}
-            placeholder="Enter your 6-digit OTP"
-            maxLength={6}
-            required
-          />
-          <button type="submit">Verify OTP</button>
+        <div className={styles.formContainer}>
+          <h1>OTP Verification</h1>
+          <p>Enter your 6-digits OTP received via your email.</p>
+          <div className={styles.inputContainer}>
+            <input
+              type="text"
+              name="otp"
+              value={OTP}
+              onChange={(e) => setOTP(e.target.value)}
+              placeholder="Enter your 6-digit OTP"
+              maxLength={6}
+              required
+            />
+            <button type="submit">Verify OTP</button>
+          </div>
         </div>
-      </div>)}
+      )}
     </form>
   );
 }
