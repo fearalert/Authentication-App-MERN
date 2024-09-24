@@ -15,10 +15,6 @@ app.use(morgan("dev"));
 
 app.use("/v1/users", userRoutes);
 
-
-app.get("/", (req, res) => {
-    res.json("Hello World!");
-})
 app.listen(process.env.PORT, async()=> {
     await connection()
     console.log(`Server is running on port ${process.env.PORT}`);

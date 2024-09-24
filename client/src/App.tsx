@@ -5,6 +5,8 @@ import Signup from "./Components/Signup/Signup"
 
 import {BrowserRouter as Router, Routes, Route} from "react-router-dom"
 import Auth from "./Utils/Auth"
+import ResetPassword from "./Components/ResetPassword/ResetPassword"
+import Otp from "./Components/OTPScreen.tsx/OtpScreen"
 
 
 const App = () => {
@@ -14,7 +16,9 @@ const App = () => {
         <Routes>
           <Route path="/" element={<Login />}/>
           <Route path="/signup" element={<Signup />}/>
+          <Route path="/otp" element={<Otp />}/>
           <Route path="/forgot-password" element={<ForgotPassword />}/>
+          <Route path="/reset-password" element={<ResetPassword />}/>
           <Route element={<Auth />}>
             <Route path="/home" element={<Home />}/>
           </Route>

@@ -1,39 +1,25 @@
 import { Link } from "react-router-dom";
 import styles from "./ForgotPassword.module.css";
-import { ChangeEvent, useState, FormEvent } from "react";
-import { emailRegex } from "../../Utils/Regex";
+import { useState, FormEvent } from "react";
 import toast from "react-hot-toast";
+import axios from "axios";
 
 function ForgotPassword() {
-  const [changePassword, setChangePassword] = useState({
-    email: "",
-  });
+  const [email, setEmail] = useState('');
+  // const navigate = useNavigate();
 
-
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
-    if (!emailRegex.test(changePassword.email)) {
-      toast.error("Please enter a valid email address.", {
-        duration: 8000,
-        position: 'top-left'
-      });
-      return;
+    try {
+      const response = await axios.post('http://localhost:4000/v1/users/forgot-password', { email });
+      toast.success(response.data.message);
+      // navigate('/otp');
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      toast.error(error.response?.data?.message || 'Something went wrong.');
     }
-
-    toast.success("Check your email!", {
-      duration: 8000,
-      position: 'top-left'
-    });
   };
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
-    const { name, value } = event.target;
-    setChangePassword((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  }
 
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
@@ -45,8 +31,9 @@ function ForgotPassword() {
             type="email"
             placeholder="Enter your Email..."
             name="email"
-            value={changePassword.email}
-            onChange={handleInputChange}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
           />
         
           <button type="submit">Proceed</button>

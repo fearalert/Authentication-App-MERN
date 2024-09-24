@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "./Signup.module.css";
 import { ChangeEvent, useState, FormEvent } from "react";
 import { emailRegex, passwordRegex } from "../../Utils/Regex";
 import toast from "react-hot-toast";
 import axios from "axios";
-// import { hostname } from "../../Constants/Hostname";
 
 function Signup() {
   const [userDetails, setuserDetails] = useState({
@@ -15,6 +14,7 @@ function Signup() {
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -50,6 +50,8 @@ function Signup() {
         duration: 4000,
         position: 'top-left'
       });
+      // Pass the email to the OTP screen
+      navigate('/otp', { state: { email: userDetails.email } });
     } catch (error: any) {
       console.log("Error", error);
       toast.error(`Error: ${error.response?.data?.message || "Something went wrong."}`, {
@@ -57,8 +59,6 @@ function Signup() {
         position: 'top-left'
       });
     }
-    
-
   };
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
@@ -76,7 +76,7 @@ function Signup() {
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       <div className={styles.formContainer}>
-      <h1>Sign Up</h1>
+        <h1>Sign Up</h1>
         <div className={styles.inputContainer}>
           <input
             type="text"

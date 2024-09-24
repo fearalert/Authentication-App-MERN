@@ -125,21 +125,67 @@ const login = async (req, res) => {
   }
 };
 
-const verifyJWTToken = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1];
-  
-  if (!token) {
-    return res.status(403).json({ message: 'No token provided' });
-  }
+const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      return res.status(401).json({ message: 'Unauthorized!' });
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required.' });
     }
-    req.userId = decoded.id;
-    next();
-  });
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+
+    const verificationToken = otp_generator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+
+    const verification_expires = Date.now() + 10 * 60 * 1000;
+
+    user.verificationToken = { verification: verificationToken, expires: verification_expires };
+    await user.save();
+
+    const message = `Use this verification link to reset your password: http://localhost:4000/v1/users/reset-password?token=${verificationToken}?email=${encodeURIComponent(email)}`;
+    await SendEmail(email, 'Password Reset', message);
+
+    return res.status(200).json({
+      message: 'Password reset email sent. Please check your email for further instructions.',
+    });
+
+  } catch (error) {
+    console.error("Error in forgot password API:", error);
+    return res.status(500).json({ message: 'Server error', error });
+  }
 };
 
-module.exports = { register, verify, login, verifyJWTToken, verifyEmail };
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, verificationToken, newPassword } = req.body;
+
+
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'Email not found' });
+    }
+
+    if (user.verificationToken.verification !== verificationToken || Date.now() > user.verificationToken.expires) {
+      return res.status(400).json({ message: 'Invalid or expired token' });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    user.password = hashedPassword;
+    user.verificationToken = {};
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully' });
+
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error });
+  }
+};
+
+module.exports = { register, verify, login, verifyEmail, forgotPassword, resetPassword };
 
