@@ -1,0 +1,25 @@
+version: '3'
+services:
+  server:
+    build: .
+    container_name: node20_server_container
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=development
+      - DB_URI=mongodb+srv://dhakalrohan229:6JMpyp1k1R5ugtUS@cluster0.js2nh.mongodb.net/
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - mongo
+  mongo:
+    image: mongo:6.0
+    container_name: mongo_container
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
