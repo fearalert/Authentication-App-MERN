@@ -1,4 +1,4 @@
-## MERN Authentication Application
+# MERN Authentication Application
 
 In this readme.md, I will guide on how to create the MERN Authentication Application from the scratch.
 
