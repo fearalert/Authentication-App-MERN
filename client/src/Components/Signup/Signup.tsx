@@ -6,6 +6,7 @@ import { emailRegex, passwordRegex } from "../../Utils/Regex";
 import toast from "react-hot-toast";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
+import hostname from "../../Constants/Hostname";
 
 function Signup() {
   const [userDetails, setuserDetails] = useState({
@@ -47,7 +48,7 @@ function Signup() {
 
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:4000/v1/users/register", userDetails);
+      const response = await axios.post(`${hostname}/v1/users/register`, userDetails);
       console.log(response);
       toast.success("Registration successful!", {
         duration: 4000,

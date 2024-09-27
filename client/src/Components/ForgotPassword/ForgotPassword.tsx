@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
+import hostname from "../../Constants/Hostname";
 
 function ForgotPassword() {
   const [email, setEmail] = useState('');
@@ -14,9 +15,9 @@ function ForgotPassword() {
     setLoading(true); 
 
     try {
-      const response = await axios.post('http://localhost:4000/v1/users/forgot-password', { email });
+      const response = await axios.post(`${hostname}/v1/users/forgot-password`, { email });
       toast.success(response.data.message);
-      // navigate('/otp'); // Uncomment if you want to navigate after successful request
+      // navigate('/otp');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Something went wrong.');

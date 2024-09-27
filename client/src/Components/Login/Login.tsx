@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
+import hostname from "../../Constants/Hostname";
 
 
 function Login() {
@@ -42,7 +43,7 @@ function Login() {
 
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:4000/v1/users/login", loginDetails);
+      const response = await axios.post(`${hostname}/v1/users/login`, loginDetails);
       console.log("Login Response", response);
       if (response.data && response.data.token) {
         toast.success("Login successful!", {

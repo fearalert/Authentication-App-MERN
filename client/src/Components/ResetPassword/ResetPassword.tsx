@@ -1,6 +1,7 @@
 import { useState, FormEvent } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
+import hostname from '../../Constants/Hostname';
 
 function ResetPassword() {
   const [formData, setFormData] = useState({
@@ -12,7 +13,7 @@ function ResetPassword() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/v1/users/reset-password', formData);
+      const response = await axios.post(`${hostname}/v1/users/reset-password`, formData);
       toast.success(response.data.message);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {

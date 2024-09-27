@@ -1,11 +1,38 @@
-version: '3.8'
-
+version: '3'
 services:
   client:
     build: .
+    container_name: client
     ports:
       - "5173:5173"
     volumes:
       - .:/app
+      - /app/node_modules
     environment:
       - NODE_ENV=development
+      - VITE_API_URL={VITE_API_URL}
+    depends_on:
+      - server
+    command: npm run dev
+
+  server:
+    build: ../server
+    container_name: node20_server_container
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - DB_URI=${DB_URI}
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo:6.0
+    container_name: mongo_container
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

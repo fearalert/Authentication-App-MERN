@@ -4,6 +4,7 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import styles from './Otp.module.css';
 import LoadingSpinner from '../LoadingScreen/LoadingScreen';
+import hostname from '../../Constants/Hostname';
 
 function OtpScreen() {
   const [OTP, setOTP] = useState<string>('');
@@ -26,7 +27,7 @@ function OtpScreen() {
 
     try {
       setLoading(true);
-      const response = await axios.post('http://localhost:4000/v1/users/verify-otp', { email, OTP });
+      const response = await axios.post(`${hostname}/v1/users/verify-otp`, { email, OTP });
       toast.success(response.data.message, {
         duration: 4000,
         position: 'top-left',
