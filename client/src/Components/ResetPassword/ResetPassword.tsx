@@ -18,6 +18,7 @@ function ResetPassword() {
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setLoading(true);
+
     try {
       const response = await axios.post(`${hostname}/v1/users/reset-password`, formData);
       toast.success(response.data.message);
@@ -37,31 +38,31 @@ function ResetPassword() {
       ) : (
         <div className={styles.formContainer}>
           <h1>Reset Password</h1>
-          <p>Enter your registered email address, verification code received via email and the new password.</p>
-            <div className={styles.inputContainer}>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-            placeholder="Enter your email"
-            required
-          />
-          <input
-            type="text"
-            value={formData.verificationToken}
-            onChange={(e) => setFormData({ ...formData, verificationToken: e.target.value })}
-            placeholder="Enter your verification token"
-            required
-          />
-          <input
-            type="password"
-            value={formData.newPassword}
-            onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-            placeholder="Enter your new password"
-            required
-          />
-          <button type="submit">Reset Password</button>
-        </div>
+          <p>Enter your registered email address, verification code received via email, and the new password.</p>
+          <div className={styles.inputContainer}>
+            <input
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              placeholder="Enter your email"
+              required
+            />
+            <input
+              type="text"
+              value={formData.verificationToken}
+              onChange={(e) => setFormData({ ...formData, verificationToken: e.target.value })}
+              placeholder="Enter your verification token"
+              required
+            />
+            <input
+              type="password"
+              value={formData.newPassword}
+              onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
+              placeholder="Enter your new password"
+              required
+            />
+            <button type="submit">Reset Password</button>
+          </div>
         </div>
       )}
     </form>

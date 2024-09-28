@@ -8,7 +8,7 @@ import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
 import hostname from "../../Constants/Hostname";
-
+import { useAuth } from "../../Utils/useAuth";
 
 function Login() {
   const [loginDetails, setLoginDetails] = useState({
@@ -17,12 +17,11 @@ function Login() {
   });
 
   const navigate = useNavigate();
-
-
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { setAuthenticated } = useAuth();
 
-  const handleSubmit = async(event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (!emailRegex.test(loginDetails.email)) {
@@ -51,11 +50,12 @@ function Login() {
           position: 'top-left'
         });
         localStorage.setItem('token', response.data.token);
+        setAuthenticated(true);
         navigate('/home');
         setLoginDetails({
           email: "",
           password: "",
-        })
+        });
       }
     } catch (error: any) {
       console.log("Error", error);
@@ -67,7 +67,6 @@ function Login() {
       setLoading(false);
     }
   };
-
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
     const { name, value } = event.target;
@@ -84,54 +83,55 @@ function Login() {
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       {loading ? (
-         <LoadingSpinner />
+        <LoadingSpinner />
       ) : (
-      <div className={styles.formContainer}>
-        <h1>Login</h1>
-        <div className={styles.inputContainer}>
-          <input
-            type="email"
-            placeholder="Enter your Email..."
-            name="email"
-            value={loginDetails.email}
-            onChange={handleInputChange}
-          />
-          <div className={styles.passwordContainer}>
+        <div className={styles.formContainer}>
+          <h1>Login</h1>
+          <div className={styles.inputContainer}>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your Password..."
-              name="password"
-              value={loginDetails.password}
+              type="email"
+              placeholder="Enter your Email..."
+              name="email"
+              value={loginDetails.email}
               onChange={handleInputChange}
             />
-            <button
-              type="button"
-              className={styles.showHideBtn}
-              onClick={togglePasswordVisibility}
-            >
-              {showPassword ? "HIDE" : "SHOW"}
+            <div className={styles.passwordContainer}>
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your Password..."
+                name="password"
+                value={loginDetails.password}
+                onChange={handleInputChange}
+              />
+              <button
+                type="button"
+                className={styles.showHideBtn}
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? "HIDE" : "SHOW"}
+              </button>
+            </div>
+            <button type="submit">Login</button>
+          </div>
+
+          <Link className={styles.forgotPassword} to={"/forgot-password"}>Forgot Password?</Link>
+          
+          <div>________________________</div>
+          <div className={styles.socialLogin}>
+            <button type="button" className={styles.googleBtn}>
+              <FaGoogle className={styles.icon} /> Login with Google
+            </button>
+            <button type="button" className={styles.facebookBtn}>
+              <FaFacebookF className={styles.icon} /> Login with Facebook
             </button>
           </div>
-          <button type="submit">Login</button>
-        </div>
 
-        <Link className={styles.forgotPassword} to={"/forgot-password"}>Forgot Password?</Link>
-        
-        <div>________________________</div>
-        <div className={styles.socialLogin}>
-          <button type="button" className={styles.googleBtn}>
-            <FaGoogle className={styles.icon} /> Login with Google
-          </button>
-          <button type="button" className={styles.facebookBtn}>
-            <FaFacebookF className={styles.icon} /> Login with Facebook
-          </button>
+          <div className={styles.links}>
+            <span>Don't have an account? </span>
+            <Link className={styles.redirect} to={"/signup"}>Sign up here</Link>
+          </div>
         </div>
-
-        <div className={styles.links}>
-          <span>Don't have an account? </span>
-          <Link className={styles.redirect} to={"/signup"}>Sign up here</Link>
-        </div>
-      </div>)}
+      )}
     </form>
   );
 }

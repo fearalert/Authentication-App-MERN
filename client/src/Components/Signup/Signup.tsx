@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
 import hostname from "../../Constants/Hostname";
+import { useAuth } from "../../Utils/useAuth";
 
 function Signup() {
   const [userDetails, setuserDetails] = useState({
@@ -18,6 +19,7 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { setSignedUp } = useAuth();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -54,7 +56,7 @@ function Signup() {
         duration: 4000,
         position: 'top-left'
       });
-      // Pass the email to the OTP screen
+      setSignedUp(true);
       navigate('/otp', { state: { email: userDetails.email } });
     } catch (error: any) {
       console.log("Error", error);
@@ -82,50 +84,49 @@ function Signup() {
   return (
     <form onSubmit={handleSubmit} className={styles.container}>
       {loading ? (
-         <LoadingSpinner />
+        <LoadingSpinner />
       ) : (
-      <div className={styles.formContainer}>
-        <h1>Sign Up</h1>
-        <div className={styles.inputContainer}>
-          <input
-            type="text"
-            placeholder="Enter your username..."
-            name="username"
-            value={userDetails.username}
-            onChange={handleInputChange}
-          />
-          <input
-            type="email"
-            placeholder="Enter your Email..."
-            name="email"
-            value={userDetails.email}
-            onChange={handleInputChange}
-          />
-          
-          <div className={styles.passwordContainer}>
+        <div className={styles.formContainer}>
+          <h1>Sign Up</h1>
+          <div className={styles.inputContainer}>
             <input
-              type={showPassword ? "text" : "password"}
-              placeholder="Enter your Password..."
-              name="password"
-              value={userDetails.password}
+              type="text"
+              placeholder="Enter your username..."
+              name="username"
+              value={userDetails.username}
               onChange={handleInputChange}
             />
-            <button
-              type="button"
-              className={styles.showHideBtn}
-              onClick={togglePasswordVisibility}
-            >
-              {showPassword ? "HIDE" : "SHOW"}
-            </button>
+            <input
+              type="email"
+              placeholder="Enter your Email..."
+              name="email"
+              value={userDetails.email}
+              onChange={handleInputChange}
+            />
+            <div className={styles.passwordContainer}>
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your Password..."
+                name="password"
+                value={userDetails.password}
+                onChange={handleInputChange}
+              />
+              <button
+                type="button"
+                className={styles.showHideBtn}
+                onClick={togglePasswordVisibility}
+              >
+                {showPassword ? "HIDE" : "SHOW"}
+              </button>
+            </div>
+            <button type="submit">Sign up</button>
           </div>
-
-          <button type="submit">Sign up</button>
+          <div className={styles.links}>
+            <span>Already have an account? </span>
+            <Link className={styles.redirect} to={"/"}>Login here</Link>
+          </div>
         </div>
-        <div className={styles.links}>
-          <span>Already have an account? </span>
-          <Link className={styles.redirect} to={"/"}>Login here</Link>
-        </div>
-      </div>)}
+      )}
     </form>
   );
 }

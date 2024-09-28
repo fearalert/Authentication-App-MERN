@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./ForgotPassword.module.css";
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, ChangeEvent } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
 import hostname from "../../Constants/Hostname";
+import { emailRegex } from "../../Utils/Regex";
 
 function ForgotPassword() {
   const navigate = useNavigate();
@@ -13,18 +15,37 @@ function ForgotPassword() {
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setLoading(true); 
+
+    // Validate email format before submitting
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address.", {
+        duration: 8000,
+        position: 'top-left'
+      });
+      return;
+    }
+
+    setLoading(true);
 
     try {
       const response = await axios.post(`${hostname}/v1/users/forgot-password`, { email });
-      toast.success(response.data.message);
+      toast.success(response.data.message, {
+        duration: 4000,
+        position: 'top-left'
+      });
       navigate('/reset-password');
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Something went wrong.');
+      toast.error(error.response?.data?.message || 'Something went wrong.', {
+        duration: 4000,
+        position: 'top-left'
+      });
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setEmail(event.target.value);
   };
 
   return (
@@ -41,10 +62,12 @@ function ForgotPassword() {
               placeholder="Enter your Email..."
               name="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleInputChange}
               required
             />
-            <button type="submit">Proceed to Reset</button>
+            <button type="submit" disabled={!email.trim()}>
+              Proceed to Reset
+            </button>
           </div>
 
           <div className={styles.links}>
