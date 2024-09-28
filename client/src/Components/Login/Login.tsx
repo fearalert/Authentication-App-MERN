@@ -9,7 +9,6 @@ import LoadingSpinner from "../LoadingScreen/LoadingScreen";
 import hostname from "../../Constants/Hostname";
 import { useAuth } from "../../Utils/AuthContext/useAuth";
 
-
 interface LoginCredentials {
   email: string;
   password: string;
@@ -25,13 +24,13 @@ function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { setAuthenticated, setRefreshToken } = useAuth(); 
+  const { setAuthenticated, setRefreshToken } = useAuth();
 
   const login = async (credentials: LoginCredentials) => {
     try {
       const response = await axios.post(`${hostname}/v1/users/login`, credentials, { withCredentials: true });
       const { accessToken } = response.data;
-  
+
       if (accessToken) {
         localStorage.setItem('token', accessToken);
         setAuthenticated(true);
@@ -47,10 +46,10 @@ function Login() {
       });
     }
   };
-  
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-  
+
     if (!emailRegex.test(loginDetails.email)) {
       toast.error("Please enter a valid email address.", {
         duration: 8000,
@@ -58,7 +57,7 @@ function Login() {
       });
       return;
     }
-  
+
     if (loginDetails.password.length < 8) {
       toast.error("Password must be at least 8 characters long.", {
         duration: 8000,
@@ -66,13 +65,11 @@ function Login() {
       });
       return;
     }
-  
+
     setLoading(true);
     await login(loginDetails);
     setLoading(false);
   };
-  
-
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
     const { name, value } = event.target;

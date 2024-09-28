@@ -125,15 +125,13 @@ const login = async (req, res) => {
       const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
       const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-      // Store refresh token in the database
       user.refreshToken = refreshToken;
       await user.save();
 
-      // Set refresh token as a cookie
       res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+          maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
       res.json({ accessToken, message: 'Login successful' });

@@ -24,8 +24,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (token && isTokenValid(token)) {
       setAuthenticated(true);
       setRefreshToken(token);
+    } else {
+      setAuthenticated(false);
     }
-  }, []);
+  }, []); // Run once on mount
 
   const isTokenValid = (token: string): boolean => {
     if (!token || !token.includes('.')) return false;
@@ -36,9 +38,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const payload = JSON.parse(atob(parts[1]));
       const currentTime = Date.now() / 1000;
       return payload.exp > currentTime;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error:any) {
-      console.log("Auth error", error)
+    } catch (error) {
+      console.error("Auth error", error);
       return false;
     }
   };
