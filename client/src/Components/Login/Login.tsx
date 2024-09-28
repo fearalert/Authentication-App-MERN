@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./Login.module.css";
 import { ChangeEvent, useState, FormEvent } from "react";
@@ -8,7 +7,13 @@ import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
 import hostname from "../../Constants/Hostname";
-import { useAuth } from "../../Utils/useAuth";
+import { useAuth } from "../../Utils/AuthContext/useAuth";
+
+
+interface LoginCredentials {
+  email: string;
+  password: string;
+}
 
 function Login() {
   const [loginDetails, setLoginDetails] = useState({
@@ -19,11 +24,33 @@ function Login() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { setAuthenticated } = useAuth();
 
+  const { setAuthenticated, setRefreshToken } = useAuth(); 
+
+  const login = async (credentials: LoginCredentials) => {
+    try {
+      const response = await axios.post(`${hostname}/v1/users/login`, credentials, { withCredentials: true });
+      const { accessToken } = response.data;
+  
+      if (accessToken) {
+        localStorage.setItem('token', accessToken);
+        setAuthenticated(true);
+        setRefreshToken(accessToken);
+        navigate('/home');
+      }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      console.error('Login failed:', error);
+      toast.error(`Error: ${error.response?.data?.message || "Something went wrong."}`, {
+        duration: 4000,
+        position: 'top-left'
+      });
+    }
+  };
+  
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-
+  
     if (!emailRegex.test(loginDetails.email)) {
       toast.error("Please enter a valid email address.", {
         duration: 8000,
@@ -31,7 +58,7 @@ function Login() {
       });
       return;
     }
-
+  
     if (loginDetails.password.length < 8) {
       toast.error("Password must be at least 8 characters long.", {
         duration: 8000,
@@ -39,34 +66,13 @@ function Login() {
       });
       return;
     }
-
-    try {
-      setLoading(true);
-      const response = await axios.post(`${hostname}/v1/users/login`, loginDetails);
-      console.log("Login Response", response);
-      if (response.data && response.data.token) {
-        toast.success("Login successful!", {
-          duration: 4000,
-          position: 'top-left'
-        });
-        localStorage.setItem('token', response.data.token);
-        setAuthenticated(true);
-        navigate('/home');
-        setLoginDetails({
-          email: "",
-          password: "",
-        });
-      }
-    } catch (error: any) {
-      console.log("Error", error);
-      toast.error(`Error: ${error.response?.data?.message || "Something went wrong."}`, {
-        duration: 4000,
-        position: 'top-left'
-      });
-    } finally {
-      setLoading(false);
-    }
+  
+    setLoading(true);
+    await login(loginDetails);
+    setLoading(false);
   };
+  
+
 
   function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
     const { name, value } = event.target;

@@ -28,7 +28,10 @@ const UserSchema = new mongoose.Schema({
   verificationToken: {
     verification: String,
     expires: Date,
-  }
+  },
+  refreshToken: {
+    type: String,
+  },
 });
 
 const UserModel = mongoose.model("Users", UserSchema);

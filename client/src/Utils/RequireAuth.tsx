@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from './useAuth';
+import { useAuth } from './AuthContext/useAuth';
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -10,6 +10,7 @@ export const RequireAuth = ({ children }: AuthGuardProps) => {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
 };
+
 
 export const RequireSignup = ({ children }: AuthGuardProps) => {
   const { isSignedUp } = useAuth();

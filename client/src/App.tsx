@@ -1,11 +1,11 @@
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ForgotPassword from "./Components/ForgotPassword/ForgotPassword";
 import Home from "./Components/Home/Home";
 import Login from "./Components/Login/Login";
 import Signup from "./Components/Signup/Signup";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import ResetPassword from "./Components/ResetPassword/ResetPassword";
-import Otp from "./Components/OTPScreen.tsx/OtpScreen";
-import { AuthProvider } from "./Utils/AuthContext";
+import Otp from "./Components/OTPScreen/OtpScreen";
+import { AuthProvider } from "./Utils/AuthContext/AuthContext";
 import { RequireAuth, RequireSignup, RequireForgotPassword } from "./Utils/RequireAuth";
 
 const App = () => {

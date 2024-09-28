@@ -7,10 +7,10 @@ import toast from "react-hot-toast";
 import axios from "axios";
 import LoadingSpinner from "../LoadingScreen/LoadingScreen";
 import hostname from "../../Constants/Hostname";
-import { useAuth } from "../../Utils/useAuth";
+import { useAuth } from "../../Utils/AuthContext/useAuth";
 
 function Signup() {
-  const [userDetails, setuserDetails] = useState({
+  const [userDetails, setUserDetails] = useState({
     username: "",
     email: "",
     password: ""
@@ -19,7 +19,7 @@ function Signup() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const { setSignedUp } = useAuth();
+  const { setSignedUp, setAuthenticated } = useAuth();
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -57,6 +57,11 @@ function Signup() {
         position: 'top-left'
       });
       setSignedUp(true);
+      // Assuming the API might return a token upon successful registration
+      if (response.data.token) {
+        localStorage.setItem('token', response.data.token);
+        setAuthenticated(true);
+      }
       navigate('/otp', { state: { email: userDetails.email } });
     } catch (error: any) {
       console.log("Error", error);
@@ -69,17 +74,17 @@ function Signup() {
     }
   };
 
-  function handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
+  const handleInputChange = (event: ChangeEvent<HTMLInputElement>): void => {
     const { name, value } = event.target;
-    setuserDetails((prev) => ({
+    setUserDetails((prev) => ({
       ...prev,
       [name]: value,
     }));
-  }
+  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(prevShowPassword => !prevShowPassword);
-  }
+  };
 
   return (
     <form onSubmit={handleSubmit} className={styles.container}>

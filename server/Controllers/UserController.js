@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
-const UserModel = require('../Models/UserSchema');
+const UserModel = require('../models/UserSchema');
 const otp_generator = require('otp-generator');
-const SendEmail = require('../Utils/SendEmail');
+const SendEmail = require('../utils/SendEmail');
 const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
@@ -24,9 +24,6 @@ const register = async (req, res) => {
     const verification_expires = new Date();
     verification_expires.setMinutes(verification_expires.getMinutes() + 5);
 
-    console.log("Token", verificationToken);
-    console.log("OTP", OTP);
-
     const newUser = new UserModel({
       username,
       email,
@@ -36,7 +33,7 @@ const register = async (req, res) => {
     });
 
     await newUser.save();
-    const verificationLink =`http://localhost:4000/v1/users/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+    const verificationLink = `http://localhost:4000/v1/users/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
     const message = `Your OTP is ${OTP}. It will expire in 10 minutes. \nOr use this verification link: ${verificationLink}`;
     await SendEmail(email, 'Account Verification', message);
 
@@ -49,7 +46,6 @@ const register = async (req, res) => {
     return res.status(500).json({ message: 'Server error', error });
   }
 };
-
 
 const verifyOTP = async (req, res) => {
   try {
@@ -108,32 +104,75 @@ const verifyEmail = async (req, res) => {
   }
 };
 
-
 const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
+      const { email, password } = req.body;
 
-    const user = await UserModel.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(400).json({ message: 'Invalid email address' });
-    }
+      const user = await UserModel.findOne({ email }).select('+password');
+      if (!user) {
+          return res.status(400).json({ message: 'Invalid email address' });
+      }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid password' });
-    }
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+          return res.status(400).json({ message: 'Invalid password' });
+      }
 
-    if (!user.isVerified) {
-      return res.status(403).json({ message: 'User is not verified' });
-    }
+      if (!user.isVerified) {
+          return res.status(403).json({ message: 'User is not verified' });
+      }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+      const accessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+      const refreshToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
 
-    res.json({ token, message: 'Login successful' });
+      // Store refresh token in the database
+      user.refreshToken = refreshToken;
+      await user.save();
+
+      // Set refresh token as a cookie
+      res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      res.json({ accessToken, message: 'Login successful' });
   } catch (error) {
-    console.error("Error in login API:", error);
-    return res.status(500).json({ message: 'Server error', error });
+      console.error("Error in login API:", error);
+      return res.status(500).json({ message: 'Server error', error });
   }
+};
+
+const refreshToken = async (req, res) => {
+  const { refreshToken } = req.cookies;
+
+  if (!refreshToken) return res.sendStatus(401); // Unauthorized
+
+  const user = await UserModel.findOne({ refreshToken });
+  if (!user) return res.sendStatus(403); // Forbidden
+
+  jwt.verify(refreshToken, process.env.JWT_SECRET, (err, user) => {
+      if (err) return res.sendStatus(403); // Forbidden
+
+      const newAccessToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
+
+      res.json({ accessToken: newAccessToken });
+  });
+};
+
+const logout = async (req, res) => {
+  const { refreshToken } = req.cookies;
+  if (!refreshToken) return res.sendStatus(204);
+
+  const user = await UserModel.findOne({ refreshToken });
+  if (user) {
+    user.refreshToken = null;
+    await user.save();
+  }
+
+  res.clearCookie('accessToken');
+  res.clearCookie('refreshToken');
+  res.status(204).send();
 };
 
 const forgotPassword = async (req, res) => {
@@ -153,9 +192,6 @@ const forgotPassword = async (req, res) => {
     const OTP_expires = new Date();
     OTP_expires.setMinutes(OTP_expires.getMinutes() + 5);
 
-    // const verificationToken = otp_generator.generate(6, { upperCaseAlphabets: false, specialChars: false });
-    // const verification_expires = Date.now() + 10 * 60 * 1000;
-
     user.verificationToken = { verification: OTP, expires: OTP_expires };
     await user.save();
 
@@ -171,11 +207,9 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-
 const resetPassword = async (req, res) => {
   try {
     const { email, verificationToken, newPassword } = req.body;
-
 
     const user = await UserModel.findOne({ email });
     if (!user) {
@@ -187,18 +221,24 @@ const resetPassword = async (req, res) => {
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-    user.password = hashedPassword;
+    user.password = await bcrypt.hash(newPassword, salt);
     user.verificationToken = {};
     await user.save();
 
-    res.status(200).json({ message: 'Password reset successfully' });
-
+    return res.status(200).json({ message: 'Password successfully reset.' });
   } catch (error) {
-    res.status(500).json({ message: 'Server error', error });
+    console.error("Error in reset password API:", error);
+    return res.status(500).json({ message: 'Server error', error });
   }
 };
 
-module.exports = { register, verifyOTP, login, verifyEmail, forgotPassword, resetPassword };
-
+module.exports = {
+  register,
+  verifyOTP,
+  verifyEmail,
+  login,
+  refreshToken,
+  logout,
+  forgotPassword,
+  resetPassword,
+};
