@@ -8,18 +8,17 @@
 }
 
 .formContainer {
-    /* border: 1px solid var(--primary-color); */
-    border: 1px solid var(--input-background-color);
+    border: 2px solid var(--input-background-color);
     display: flex;
     flex-direction: column;
     min-width: 380px;
+    max-width: 400px;
     padding: 2rem;
     border-radius: 2rem;
     row-gap: 1rem;
     background-color: var(--form-background-color);
     text-align: center;
-    box-shadow: var(--input-background-color) 0px 4px 12px;
-    color: var(--primary-color);
+    box-shadow: var(--input-background-color) 0px 8px 24px;
 }
 
 .formContainer > h1 {
@@ -29,6 +28,20 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--primary-color);
+}
+
+.formContainer > p {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--form-background-color);
+    text-align: center;
+    font-style: italic;
+    font-size: small;
 }
 
 .inputContainer {
