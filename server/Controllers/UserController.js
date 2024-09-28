@@ -36,8 +36,8 @@ const register = async (req, res) => {
     });
 
     await newUser.save();
-
-    const message = `Your OTP is ${OTP}. It will expire in 10 minutes. \nOr use this verification link: http://localhost:4000.com/v1/users/verify/${verificationToken}`;
+    const verificationLink =`http://localhost:4000/v1/users/verify-email?token=${verificationToken}&email=${encodeURIComponent(email)}`;
+    const message = `Your OTP is ${OTP}. It will expire in 10 minutes. \nOr use this verification link: ${verificationLink}`;
     await SendEmail(email, 'Account Verification', message);
 
     return res.status(201).json({
@@ -51,7 +51,7 @@ const register = async (req, res) => {
 };
 
 
-const verify = async (req, res) => {
+const verifyOTP = async (req, res) => {
   try {
     const { email, OTP } = req.body;
 
@@ -76,24 +76,35 @@ const verify = async (req, res) => {
 };
 
 const verifyEmail = async (req, res) => {
-  const { token, email } = req.query;
+  try {
+    const { token, email } = req.query;
 
-  const user = await UserModel.findOne({ email });
-  if (!user) {
-    return res.status(400).json({ message: 'User not found' });
-  }
+    if (!token || !email) {
+      return res.status(400).json({ message: 'Invalid verification link.' });
+    }
 
-  if (
-    user.verificationToken.verification === token &&
-    user.verificationToken.expires > Date.now()
-  ) {
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found.' });
+    }
+
+    if (
+      !user.verificationToken ||
+      user.verificationToken.token !== token ||
+      user.verificationToken.expires < new Date()
+    ) {
+      return res.status(400).json({ message: 'Invalid or expired verification link.' });
+    }
+
     user.isVerified = true;
-    user.verificationToken = {};
+    user.verificationToken = undefined;
     await user.save();
 
-    return res.json({ message: 'Email verified successfully!' });
-  } else {
-    return res.status(400).json({ message: 'Invalid or expired verification token' });
+    return res.status(200).json({ message: 'Email successfully verified.' });
+  } catch (error) {
+    console.error("Error in email verification API:", error);
+    return res.status(500).json({ message: 'Server error', error });
   }
 };
 
@@ -138,20 +149,22 @@ const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: 'Email not found' });
     }
 
-    const verificationToken = otp_generator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+    const OTP = Math.floor(100000 + Math.random() * 900000).toString();
+    const OTP_expires = new Date();
+    OTP_expires.setMinutes(OTP_expires.getMinutes() + 5);
 
-    const verification_expires = Date.now() + 10 * 60 * 1000;
+    // const verificationToken = otp_generator.generate(6, { upperCaseAlphabets: false, specialChars: false });
+    // const verification_expires = Date.now() + 10 * 60 * 1000;
 
-    user.verificationToken = { verification: verificationToken, expires: verification_expires };
+    user.verificationToken = { verification: OTP, expires: OTP_expires };
     await user.save();
 
-    const message = `Use this verification link to reset your password: http://localhost:4000/v1/users/reset-password?token=${verificationToken}?email=${encodeURIComponent(email)}`;
+    const message = `Use this verification token to proceed to reset your password: ${OTP}`;
     await SendEmail(email, 'Password Reset', message);
 
     return res.status(200).json({
       message: 'Password reset email sent. Please check your email for further instructions.',
     });
-
   } catch (error) {
     console.error("Error in forgot password API:", error);
     return res.status(500).json({ message: 'Server error', error });
@@ -187,5 +200,5 @@ const resetPassword = async (req, res) => {
   }
 };
 
-module.exports = { register, verify, login, verifyEmail, forgotPassword, resetPassword };
+module.exports = { register, verifyOTP, login, verifyEmail, forgotPassword, resetPassword };
 

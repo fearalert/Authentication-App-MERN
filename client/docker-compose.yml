@@ -25,7 +25,8 @@ services:
       - DB_URI=${DB_URI}
     depends_on:
       - mongo
-
+    command: npm run dev
+    
   mongo:
     image: mongo:6.0
     container_name: mongo_container
